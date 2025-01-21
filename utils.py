@@ -173,10 +173,7 @@ def sce_loss(x, y, alpha=3):
 
 
 def get_adj(x, k):
-    # 计算阈值
     p = cal_adj_mat_parameter(k, x)
-    # 生成PSN矩阵
     adj_gen = gen_adj_mat_tensor(x, p)
-    # 归一化
     adj_gen = normalize_adj(adj_gen)
     return adj_gen
