@@ -3,9 +3,6 @@ import utils
 import torch
 from MGDMCL import FUSION
 import ModelEvaluate
-import pandas as pd
-import time
-
 cuda = True if torch.cuda.is_available() else False
 
 
