@@ -1,11 +1,3 @@
-"""
-代码主题
-①  注意多分类 返回AUC, ACC, f1_W, f1_M, 二分类返回 AUC, ACC, f1
-代码问题
-① 多分类的AUC的参数如何选取 44行
-
-
-"""
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, precision_score, recall_score
 import torch
 
