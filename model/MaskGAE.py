@@ -63,19 +63,24 @@ class AglMGae(nn.Module):
     def forward(self, x, y=None, Training=False):
         att_score, feat_emb = self.gate(x)
         feat_emb_norm = F.normalize(feat_emb, dim=0)
-        #
+        # 构造PSN
         adj_gen = utils.get_adj(feat_emb_norm, self.k)
-        #
+        # 构造2*n
         edge_index, edge_weight = utils.to_sparse(adj_gen)
         # GCN
         feat_emb_gcn = self.encoder(feat_emb_norm, edge_index, edge_weight)
         loss = {}
+        graph_correct = 0
         if Training:
-            #
+            # Decoder部分
+            # 方案 2
             feat_emb_gcn_mask, (mask_nodes, keep_nodes) = encoding_mask_noise_by_label(feat_emb_gcn[-1], y, self.mask_rate)
             feat_emb_de = self.encoder_to_decoder(feat_emb_gcn_mask)
             feat_emb_gcn_de = self.decoder(feat_emb_de, edge_index, edge_weight)
             loss['loss_recon'] = utils.sce_loss(feat_emb_gcn_de[-1][mask_nodes], feat_emb_norm[mask_nodes])
+            # loss['loss_recon'] = utils.sce_loss(feat_emb_gcn_de[-1], feat_emb)
+            # 计算损失函数
             loss['loss_att'] = torch.mean(att_score)
+            # 计算图的准确性
         return feat_emb_gcn, loss, adj_gen.cpu()
 

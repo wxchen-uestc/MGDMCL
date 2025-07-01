@@ -1,7 +1,7 @@
 import numpy as np
 import utils
 import torch
-from MGDMCL import FUSION
+from model.MGDMCL import FUSION
 import ModelEvaluate
 cuda = True if torch.cuda.is_available() else False
 
@@ -56,15 +56,46 @@ def Test(x_trte, y_te, model):
     return ModelEvaluate.get_result(pre, y_te)
 
 
-def Train_Test(data_fold, li_hid_dim, k, mask_rate, a, b, lr, epochs):
-    # get data
+def Train_Test(data_fold):
+    if data_fold == 'BRCA':
+        data_fold = r'dataset\BRCA'
+        k = 6
+        mask_rate = 0.6
+        lr = 1e-4
+
+    elif data_fold == 'KIPAN':
+        data_fold = r'dataset\KIPAN'
+        k = 5
+        mask_rate = 0.3
+        lr = 1e-4
+
+    elif data_fold == 'LGG':
+        data_fold = r'dataset\LGG'
+        k = 4
+        mask_rate = 0.2
+        lr = 1e-5
+
+    elif data_fold == 'ROSMAP':
+        data_fold = r'dataset\ROSMAP'
+        k = 2
+        mask_rate = 0.
+        lr = 1e-3
+
+    elif data_fold == 'LUSC':
+        data_fold = r'dataset\LUSC'
+        k = 8
+        mask_rate = 0.6
+        lr = 1e-4
+
+    li_hid_dim = [400, 400, 400]
+    epochs = 10000
     x_tr, y_tr, sample_weight, x_trte, y_te, matrix_same = data_prepare(data_fold)
-    #
+    # get data
     num_class = int(max(y_tr) + 1)
     in_dim = [x.shape[1] for x in x_tr]
     # define model and optimal
     model = FUSION(in_dim=in_dim, li_hid_dim=li_hid_dim,
-                   k=k, num_class=num_class, dropout=0.5, mask_rate=mask_rate, a=a, b=b)
+                   k=k, num_class=num_class, dropout=0.5, mask_rate=mask_rate)
     optim = torch.optim.Adam(model.parameters(), lr=lr)
     if cuda:
         model = model.cuda()
@@ -73,17 +104,12 @@ def Train_Test(data_fold, li_hid_dim, k, mask_rate, a, b, lr, epochs):
     for epoch in range(epochs):
         Train(x_tr, y_tr, sample_weight, model, optim, matrix_same)
         if epoch % 50 == 0:
+            print(f"epoch is {epoch}: ", end='')
             result.append(Test(x_trte, y_te, model))
     # Test
     result.append(Test(x_trte, y_te, model))
 
 
-Train_Test(data_fold=r'D:\通用分类\数据\划分数据\BRCA',
-           li_hid_dim=[300, 300, 300],
-           k=10,
-           mask_rate=0.6,
-           a=0.01,
-           b=0.01,
-           lr=1e-4,
-           epochs=10000)
+
+Train_Test(data_fold='ROSMAP')
 
